@@ -1,11 +1,5 @@
-import re
 import PyPDF2
-import urllib.request
-import urllib.parse
-
-def main():
-    print("Temporary")
-
+import re
 
 class MmfPdf:
     def __init__(self, file):
@@ -101,10 +95,3 @@ class MmfPdf:
 
         songs[-1].rstrip()
         print(songs)
-
-
-if __name__ == "__main__":
-    main()
-
-mmfPdf = MmfPdf("D:/Downloads/2019-Greater-Moncton-Schedule.pdf")
-mmfPdf.extractClassInformation("PS08B")

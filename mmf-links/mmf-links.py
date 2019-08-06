@@ -1,11 +1,13 @@
 import re
 import PyPDF2
+import urllib.request
+import urllib.parse
 
 def main():
-    mmfFileName = input("Please type in the path to your Moncton Music Festival PDF: ")
+    print("Temporary")
 
 
-class MmfPdf():
+class MmfPdf:
     def __init__(self, file):
         """
         Initializes Moncton Music Festival PDF Class, used to manipulate the PDF file
@@ -26,8 +28,11 @@ class MmfPdf():
         Returns: List of strings that are song names, if error, returns None
         """
         # Locates competition class in the PDF file to reduce searching size
+        currentPage = 0
         for pageNum in range(self.pageNumber):
-            pageText = self.pdfReader.getPage(pageNum).extractText()
+            page = self.pdfReader.getPage(pageNum)
+            currentPage = self.pdfReader.getPageNumber(page) + 1
+            pageText = page.extractText()
             # Next page variable, in case the competitors are cut off
             nextPageText = self.pdfReader.getPage(pageNum + 1).extractText()
             competitionClass = re.search(mmfClass.upper(), pageText)
@@ -46,14 +51,56 @@ class MmfPdf():
         searchStart = pageText.index(competitionClass)
         searchEnd = pageText[searchStart:].index("CLASS") + searchStart
         flag = False
+        regexFlag = False
         for i in range(searchStart, searchEnd):
+            # Checks for beginning of piece and if a previous ____ (indicating start of piece) was found
             if "____" in pageText[i] or i == searchEnd - 1:
+                regexFlag = False
                 flag = True
                 if song:
-                    songs.append(" ".join(song))
+                    songs.append(" ".join(song).rstrip())
                     song = []
-            elif flag == True and (pageText[i - 1] == "-" or song):
-                song.append(pageText[i])
+            elif flag and (pageText[i - 1] == "-" or song or regexFlag):
+                if not re.match("[a-z]\.", pageText[i]):
+                    song.append(pageText[i])
+
+            # Checks in case competitor has more than one piece to play
+            if re.match("[a-z]\.", pageText[i]):
+                if song:
+                    songs.append(" ".join(song).rstrip())
+                    song = []
+                regexFlag = True
+        print(songs)
+        self.cutLastSongInfo(songs, currentPage)
+
+
+    def cutLastSongInfo(self, songs, currentPage):
+        locationList = ["Lewisville Middle School", "Carrefour de l’Acadie", "École Mascaret",
+                        "Mount Royal United Church", "St. Paul’s United Church",
+                        "Bethel Presbyterian Church", "Highfield United Baptist Church",
+                        "Edith Cavell School", "Central United Church",
+                        "First United Baptist Church", "Harrison Trimble High School",
+                        "First Church of the Nazarene", "Salle Neil Michaud"]
+        days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        # Cuts off unnecessary information from last song of the
+        for i in range(len(songs[-1])):
+            checkLocations = [location for location in locationList if location in songs[-1]]
+            if checkLocations:
+                songs[-1] = songs[-1][:songs[-1].find(checkLocations[0])]
+
+        for i in range(len(songs[-1])):
+            checkDays = [day for day in days if day in songs[-1]]
+            if checkDays:
+                songs[-1] = songs[-1][:songs[-1].find(checkDays[-1])]
+
+        if "JUNIOR" in songs[-1]:
+            songs[-1] = songs[-1][:songs[-1].find("JUNIOR")]
+
+        if "SENIOR" in songs[-1]:
+            songs[-1] = songs[-1][:songs[-1].find("SENIOR")]
+
+        songs[-1].rstrip()
+        print(songs)
 
 
 if __name__ == "__main__":

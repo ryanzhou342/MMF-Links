@@ -12,7 +12,7 @@ class MmfPdf:
             self.pdfReader = PyPDF2.PdfFileReader(self.pdfFile)
             self.pageNumber = self.pdfReader.getNumPages()
         except FileNotFoundError:
-            print("File could not be found or does not exist.")
+            raise FileNotFoundError("File could not be found or does not exist.")
 
     def extractClassInformation(self, mmfClass):
         """
@@ -64,8 +64,7 @@ class MmfPdf:
                     songs.append(" ".join(song).rstrip())
                     song = []
                 regexFlag = True
-        print(songs)
-        self.cutLastSongInfo(songs, currentPage)
+        return(self.cutLastSongInfo(songs, currentPage))
 
 
     def cutLastSongInfo(self, songs, currentPage):
@@ -74,18 +73,16 @@ class MmfPdf:
                         "Bethel Presbyterian Church", "Highfield United Baptist Church",
                         "Edith Cavell School", "Central United Church",
                         "First United Baptist Church", "Harrison Trimble High School",
-                        "First Church of the Nazarene", "Salle Neil Michaud"]
+                        "First Church of the Nazarene", "Salle Neil Michaud", "Church of the Nazarene"]
         days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
         # Cuts off unnecessary information from last song of the
-        for i in range(len(songs[-1])):
-            checkLocations = [location for location in locationList if location in songs[-1]]
-            if checkLocations:
-                songs[-1] = songs[-1][:songs[-1].find(checkLocations[0])]
+        checkLocations = [location for location in locationList if location in songs[-1]]
+        if checkLocations:
+            songs[-1] = songs[-1][:songs[-1].find(checkLocations[0])]
 
-        for i in range(len(songs[-1])):
-            checkDays = [day for day in days if day in songs[-1]]
-            if checkDays:
-                songs[-1] = songs[-1][:songs[-1].find(checkDays[-1])]
+        checkDays = [day for day in days if day in songs[-1]]
+        if checkDays:
+            songs[-1] = songs[-1][:songs[-1].find(checkDays[-1])]
 
         if "JUNIOR" in songs[-1]:
             songs[-1] = songs[-1][:songs[-1].find("JUNIOR")]
@@ -93,5 +90,5 @@ class MmfPdf:
         if "SENIOR" in songs[-1]:
             songs[-1] = songs[-1][:songs[-1].find("SENIOR")]
 
-        songs[-1].rstrip()
-        print(songs)
+        songs[-1] = songs[-1].rstrip()
+        return(songs)

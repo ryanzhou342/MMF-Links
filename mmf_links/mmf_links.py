@@ -4,12 +4,12 @@ import requests
 
 def main():
     # Opens Moncton Music Festival PDF file
-    filePath = input("Please provide the file path to your Moncton Music Festival PDF file: ")
-    mmfPdf = MmfPdf(filePath)
+    file_path = input("Please provide the file path to your Moncton Music Festival PDF file: ")
+    mmf_pdf = MmfPdf(file_path)
 
     # Manipulates the PDF file to extract song names
-    className = input("Please provide a competition class (e.g: PS04E): ")
-    songs = mmfPdf.extractClassInformation(className)
+    class_name = input("Please provide a competition class (e.g: PS04E): ")
+    songs = mmf_pdf.extract_class_information(class_name)
 
     for song in songs:
         response = requests.get("https://www.youtube.com/results?search_query=" + song.replace(" ", "+"))
